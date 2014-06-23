@@ -22,8 +22,8 @@ Bencode сериализация/десириализация:
 сериализация/десириализация простых pojo. Только для классов с аннотацией @BencodeSerializable. Поля не имеющие геттера и сеттера игнорируются.
 
 
-@BencodeSerializable
-public class PersonCplx {
+
+@BencodeSerializable public class PersonCplx {
 
     private String name;
     private Integer age;

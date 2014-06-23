@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 //more complex data
-@BencodeSerializable
-public class PersonCplx {
+
+@BencodeSerializable public class PersonCplx {
 
     private String name;
     private Integer age;
