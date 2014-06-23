@@ -29,6 +29,8 @@ public class EncoderDecoderTest {
 
         Encoder.encode(toEncode, out);
 
+
+
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 
         Object decoded = Decoder.decode(in);
@@ -105,9 +107,6 @@ public class EncoderDecoderTest {
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 
         PersonCplx pout = Decoder.decodePojo(in, PersonCplx.class);
-
-        System.out.println(pin);
-        System.out.println(pout);
 
         assertEquals(pin, pout);
     }
