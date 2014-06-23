@@ -21,9 +21,9 @@ Bencode сериализация/десириализация:
 
 сериализация/десириализация простых pojo. Только для классов с аннотацией @BencodeSerializable. Поля не имеющие геттера и сеттера игнорируются.
 
-
-
-@BencodeSerializable public class PersonCplx {
+```
+@BencodeSerializable
+public class PersonCplx {
 
     private String name;
     private Integer age;
@@ -124,5 +124,5 @@ public class Room {
 
         //System.out.println(pout);
         //PersonCplx{name='Den', age=99, address=Address{city='city5', postCode=23, room=Room{room=999}}, someNumbers=[13, 99], someStrings={k111=aa1, k222=string}, someList=[Address{city='city1', postCode=1222, room=Room{room=888}}, Address{city='city2', postCode=6336, room=Room{room=464}}], someMap={somekey1=Address{city='city3', postCode=23333, room=Room{room=1256}}, somekey2=Address{city='city4', postCode=765, room=Room{room=8754}}}}
-
+```
 
