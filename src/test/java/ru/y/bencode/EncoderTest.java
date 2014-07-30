@@ -107,6 +107,7 @@ public class EncoderTest {
         r.setRoom(132);
         a.setRoom(r);
 
+
         Encoder.encodePojo(p, out);
 
         assertEquals("d7:addressd4:city4:Kiev8:postCodei99e4:roomd4:roomi132eee3:agei11e4:name4:Ivan11:someNumbersli44ei55ee11:someStringsd2:k12:v12:k22:v2ee", out.toString(BencodeUtils.DEFAULT_CHARSET.name()));
