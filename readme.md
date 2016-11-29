@@ -1,3 +1,5 @@
+С помощью Java реализуйте, пожалуйста, сериализацию и десериализацию данных для формата b-encode. Оформите ответ в виде Maven Artifact.
+
 Bencode сериализация/десириализация:
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
