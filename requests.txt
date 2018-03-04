@@ -9,3 +9,4 @@ ldf3DN Mandelbrot - orbit traps
 4ssXWs SIG2014_HERBST
 XtlGR2 Golden Mean Fractal 	
  XllXzM Julia Rotater 	
+https://www.shadertoy.com/view/XlBGRt "JuliaSet3000"
