@@ -8,3 +8,4 @@ Mss3R8 - Julia - Distance
 ldf3DN Mandelbrot - orbit traps
 4ssXWs SIG2014_HERBST
 XtlGR2 Golden Mean Fractal 	
+ XllXzM Julia Rotater 	
