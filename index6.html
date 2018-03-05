@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+
+  <!-- custom CSS -->
+  <link rel="stylesheet" href="style.css" type="text/css" media="all" />
+  </head>
+
+  <body>
+    
+    <div id="Stats-output"></div>
+    <!-- Div which will hold the Output -->
+    <div id="WebGL-output"></div>
+<div id="buttondiv"> <button id="change" type="button">Click Me!</button> </div>
+  </body>
+
+<script type="x-shader/x-fragment" id="fragmentshader2">
+ uniform float iTime;
+    uniform vec2 iResolution;
+    uniform vec4      iMouse;
+    uniform sampler2D iChannel0;
+    varying vec2 fragCoord;
+    varying vec2 vUv;
+    
+ const int   NUM_CIRCLES 	= 17;
+const float TIME_MULTIPLIER = 3.0;
+const float CONSTANT_N	    = 3.0;
+const float N = CONSTANT_N;
+// Actual code below
+#define TWO_PI 6.28318530718
+#define TWO_THIRDS_PI 2.09439510239
+vec2 curUV;
+vec3 drawCircle(vec2 p, vec2 center, float radius, float edgeWidth, vec3 color)
+{
+    float dist = length(p - center);
+   	
+    vec3 ret;
+	ret = color * (1.0 - smoothstep(radius, radius+edgeWidth, abs(dist-0.35) ));
+   
+    return ret;
+} 
+vec3 draw(mat3 mat) {
+  // get center
+    return drawCircle(curUV, vec2(mat[2][0], mat[2][1]), 0.001, 0.01, vec3(1,1,1));
+}
+mat3 t1,t2;
+// shadertoy gives unknown error on try of recursion, thus
+// duplication...
+vec3 rec5(mat3 t, int iter) {
+    if(iter < 1)
+        return vec3(0.);
+    
+    vec3 col;
+    
+    mat3 tt1 = t * t1;
+    mat3 tt2 = t * t2;
+    
+    col += draw(tt1);
+    col += draw(tt2);
+    
+    //col += rec5(tt1,iter-1);
+    //col += rec5(tt2,iter-1);
+    
+    return col;
+}
+vec3 rec4(mat3 t, int iter) {
+    if(iter < 1)
+        return vec3(0.);
+    
+    vec3 col;
+    
+    mat3 tt1 = t * t1;
+    mat3 tt2 = t * t2;
+    
+    col += draw(tt1);
+    col += draw(tt2);
+    
+    col += rec5(tt1,iter-1);
+    col += rec5(tt2,iter-1);
+    
+    return col;
+}
+vec3 rec3(mat3 t, int iter) {
+    if(iter < 1)
+        return vec3(0.);
+    
+    vec3 col;
+    
+    mat3 tt1 = t * t1;
+    mat3 tt2 = t * t2;
+    
+    col += draw(tt1);
+    col += draw(tt2);
+    
+    col += rec4(tt1,iter-1);
+    col += rec4(tt2,iter-1);
+    
+    return col;
+}
+vec3 rec2(mat3 t, int iter) {
+    if(iter < 1)
+        return vec3(0.);
+    
+    vec3 col;
+    
+    mat3 tt1 = t * t1;
+    mat3 tt2 = t * t2;
+    
+    col += draw(tt1);
+    col += draw(tt2);
+    
+    col += rec3(tt1,iter-1);
+    col += rec3(tt2,iter-1);
+    
+    return col;
+}
+vec3 rec(mat3 t, int iter) {
+    if(iter < 1)
+        return vec3(0.);
+    
+    vec3 col;
+    
+    mat3 tt1 = t * t1;
+    mat3 tt2 = t * t2;
+    
+    col += draw(tt1);
+    col += draw(tt2);
+    
+    col += rec2(tt1,iter-1);
+    col += rec2(tt2,iter-1);
+    
+    return col;
+}
+void main()
+{
+	// Map coordinates into a small window around [-1, 1]
+	vec2 uv = -1.0 + 2.0 *vUv;
+	uv *= 1.2;
+	
+    t1 = mat3(0.9,-.2,0.0,sin(iTime),0.9,0,-0.4,.3 + cos(iTime * 0.2),0);
+    t2 = mat3(0.5,-0.3 + cos(iTime * 0.8 + 0.1),0.1,0.2 + sin(iTime * 1.3),0.8,0,0.1,-0.2,0);
+    
+    
+	vec3 color = vec3(0.0);
+	float angleIncrement = TWO_PI / float(NUM_CIRCLES);
+    
+    mat3 tcur = mat3(1,0,0,0,1,0,0, 0,0);
+    
+    curUV = uv;
+	color += rec(tcur,5);
+    
+	
+	gl_FragColor = vec4(color,1.0);
+}
+</script>
+
+  <script type="x-shader/x-vertex" id="vertexshader">
+    attribute vec3 in_Position;
+    varying vec2 fragCoord;
+    varying vec2 vUv; 
+    void main()
+    {
+        vUv = uv;
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0 );
+        gl_Position = projectionMatrix * mvPosition;
+        fragCoord = position.xy;
+    }
+	</script>
+
+	<script type="x-shader/x-fragment" id="fragmentshader">
+	 uniform float iTime;
+         uniform vec2 iResolution;
+         uniform vec4 iMouse;
+         uniform sampler2D iChannel0;
+         varying vec2 fragCoord;
+         varying vec2 vUv;
+    
+
+void main()
+{
+    vec2 newFragCoord = fragCoord;
+    float t = iTime/10.;
+    float color = 0.;
+
+    newFragCoord-= -1.0 + 2.0 *vUv;
+    float w = iResolution.x/2.;
+    float h = iResolution.y/2.;
+    
+    //wormy
+    for(float i = 0.; i < 12.; i+=.25){
+    	float x = (w/2.)*sin(i/30.+t*4.);
+    	float y = (h/10.)*cos(i/10.+t*8.) + 2.*sin((x*3.+t*200.)/25.);
+        color += .2/distance(newFragCoord, vec2(x, y));
+    }
+
+    //stars
+    for(float i = 0.; i < 25.; i++){
+        float x = mod(i+(sin(i))*(t+500.)*500., w*2.+200.)-w-100.;
+        float y = h*sin(cos(i*524.)*i*5.+i*2.);
+        color += (.2*sin(i)+.2)/distance(newFragCoord, vec2(x,y));
+    }
+   
+    gl_FragColor = vec4(color);
+    
+    //for more fun:
+    //gl_FragColor = vec4(abs(sin(color*34.)),abs(sin(color*45.+3.)),abs(cos(color*23.+23.)), 255);
+}
+
+	</script>
+
+  <!-- jquery js -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+
+  <!-- three js -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/90/three.js'></script> 
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.1/dat.gui.js'></script>
+
+  <!-- custom js -->
+  <script src="script.js"></script>
+
+</html>
