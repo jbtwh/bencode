@@ -10,3 +10,5 @@ ldf3DN Mandelbrot - orbit traps
 XtlGR2 Golden Mean Fractal 	
  XllXzM Julia Rotater 	
 https://www.shadertoy.com/view/XlBGRt "JuliaSet3000"
+
+shadertoy mainImage = vert shader + frag in one
