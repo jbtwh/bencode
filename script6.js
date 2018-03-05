@@ -17,13 +17,12 @@ var stats = initStats();
   // Set up uniform.
   var tuniform = {
       iTime: { type: 'f', value: 0.1 },
-	iDate:{type: "v2", value:new THREE.Vector4()},
       iResolution: {type: "v2", value: new THREE.Vector2()}
   };
   var w = window.innerWidth;
-  var h = window.innerHeight;
+  var h = window.innerHeight - 25;
   var aspect = w/h;
-  var frustumSize = 1000;
+  
   tuniform.iResolution.value.x = w; 
   tuniform.iResolution.value.y = h; 
   
@@ -41,9 +40,6 @@ var camera = new THREE.OrthographicCamera( w / - 2, w / 2, h / 2, h / - 2, 1, 10
   //renderer.shadowMapEnabled = true;
 
   document.getElementById("WebGL-output").appendChild(renderer.domElement);
-
-
-
 
   var mat = new THREE.ShaderMaterial( {
       uniforms: tuniform,
