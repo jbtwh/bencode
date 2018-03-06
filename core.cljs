@@ -1,5 +1,5 @@
 (ns singlepage-app-om.core
-  )
+  (:require [simple-xhr :as sxhr]))
 
 (enable-console-print!)
 
@@ -13,14 +13,13 @@
  (defn foo [a b] (+ a b))
 
 (defn initStats []
-(let [stats (js/Stats.)]
-(.setMode stats 0)
-(set! (.-position (.-style (.-domElement stats))) "absolute")
-(set! (.-left (.-style (.-domElement stats))) "0px")
-(set! (.-top (.-style (.-domElement stats))) "0px")
-(.appendChild (.getElementById js/document "Stats-output") (.-domElement stats))
-stats
-))
+ (let [stats (js/Stats.)]
+ (.setMode stats 0)
+ (set! (.-position (.-style (.-domElement stats))) "absolute")
+ (set! (.-left (.-style (.-domElement stats))) "0px")
+ (set! (.-top (.-style (.-domElement stats))) "0px")
+ (.appendChild (.getElementById js/document "Stats-output") (.-domElement stats))
+ stats))
 
 (def stats (initStats))
 
@@ -29,8 +28,8 @@ stats
 
 (def clock (THREE.Clock.))
 
-(def tuniform {:iTime {:type "f" :value 0.1}
-               :iResolution {:type "v2" value (THREE.Vector2.)}})
+(def tuniform (clj->js {:iTime {:type "f" :value 0.1}
+                        :iResolution {:type "v2" :value (THREE.Vector2.)}}))
 
 (def w  (.-innerWidth js/window))
 
@@ -59,23 +58,30 @@ stats
 
 (.appendChild (.getElementById js/document "WebGL-output") (.-domElement renderer))
 
-(def mat (THREE.ShaderMaterial. {
+(def mat (THREE.ShaderMaterial. (clj->js {
 :uniforms tuniform
 :vertexShader (.-textContent (.getElementById js/document "vertexshader"))
-:fragShader (.-textContent (.getElementById js/document "fragmentshader"))
-})) 
+:fragmentShader (.-textContent (.getElementById js/document "fragmentshader"))
+}))) 
 
 (def tobject (THREE.Mesh. (THREE.PlaneGeometry. w h 1 1) mat))
 
 (.add scene tobject)
 
-(defn loop []
-(.update stats)
-(.requestAnimationFrame loop)
-(set! (.-value (.-iGlobalTime tuniform)) (+ (.-value (.-iGlobalTime tuniform)) (.getDelta clock))))
+(defn mainloop []
+ (.update stats)
+ (.requestAnimationFrame js/window mainloop)
+ (set! (.-value (.-iTime tuniform)) (+ (.-value (.-iTime tuniform)) (.getDelta clock)))
+ (.render renderer scene camera))
 
-(loop)
-   
+(defn clickc [evt]
+ (set! (.-fragmentShader mat) (.-textContent (.getElementById js/document "fragmentshader2")))
+ (set! (.-needsUpdate mat) true)
+ (get-shadertoy))
+
+;;(mainloop)
+
+(set! (.-onclick (.getElementById js/document "change")) clickc)
 
 (def vertshader "varying vec2 vUv; 
 void main()
@@ -91,7 +97,7 @@ uniform sampler2D iChannel0;
 uniform sampler2D iChannel1;
 
 varying vec2 vUv;
-void main(void)
+void main()
 {
     //vec2 p = gl_FragCoord.xy / iResolution.xy;
     vec2 p = -1.0 + 2.0 *vUv;
@@ -114,6 +120,27 @@ void main(void)
     gl_FragColor = vec4(col * len * 1.5, 1.0);
 }")
 
-(println vertshader)
-(println fragshader)
+;;(println vertshader)
+;;(println fragshader)
+;;(println h)
 
+(defn get-shadertoy [] 
+(sxhr/request
+  :url "https://www.shadertoy.com/api/v1/shaders/ltGSW1?key=Bdrtwz"
+  :method "GET"
+  :complete
+  (fn [xhrio]
+    (let [content (-> xhrio
+                      .getResponseJson
+                      (js->clj :keywordize-keys true))]
+      (when (.isSuccess xhrio)
+        (.log js/console content)
+        (parse content))))))
+
+(defn parse [shadertoy]
+;;(println shadertoy)
+(-> shadertoy
+    :Shader
+    :renderpass
+    count
+    println))
