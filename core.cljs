@@ -29,7 +29,9 @@
 (def clock (THREE.Clock.))
 
 (def tuniform (clj->js {:iTime {:type "f" :value 0.1}
-                        :iResolution {:type "v2" :value (THREE.Vector2.)}}))
+                        :iResolution {:type "v2" :value (THREE.Vector2.)}
+                        :iMouse {:type "v4" :value (THREE.Vector4.)}
+}))
 
 (def w  (.-innerWidth js/window))
 
@@ -56,7 +58,7 @@
 
 (.setSize renderer w h)
 
-(.appendChild (.getElementById js/document "WebGL-output") (.-domElement renderer))
+;;(.appendChild (.getElementById js/document "WebGL-output") (.-domElement renderer))
 
 (def mat (THREE.ShaderMaterial. (clj->js {
 :uniforms tuniform
@@ -79,9 +81,30 @@
  (set! (.-needsUpdate mat) true)
  (get-shadertoy))
 
-;;(mainloop)
-
 (set! (.-onclick (.getElementById js/document "change")) clickc)
+
+(defn mousem [evt]
+(set! (.-x (.-value (.-iMouse tuniform))) (.-pageX evt))
+(set! (.-y (.-value (.-iMouse tuniform))) (.-pageY evt))
+)
+
+(set! (.-onmousemove js/document) mousem)
+
+(defn moused [evt]
+(set! (.-z (.-value (.-iMouse tuniform))) (.-pageX evt))
+(set! (.-w (.-value (.-iMouse tuniform))) (.-pageY evt))
+)
+
+(set! (.-onmousedown js/document) moused)
+
+(defn mouseu [evt]
+(set! (.-z (.-value (.-iMouse tuniform))) 0)
+(set! (.-w (.-value (.-iMouse tuniform))) 0)
+)
+
+(set! (.-onmouseup js/document) mouseu)
+
+;;(mainloop)
 
 (def vertshader "varying vec2 vUv; 
 void main()
@@ -122,11 +145,10 @@ void main()
 
 ;;(println vertshader)
 ;;(println fragshader)
-;;(println h)
 
 (defn get-shadertoy [] 
 (sxhr/request
-  :url "https://www.shadertoy.com/api/v1/shaders/ltGSW1?key=Bdrtwz"
+  :url "https://www.shadertoy.com/api/v1/shaders/4ttSDM?key=Bdrtwz"
   :method "GET"
   :complete
   (fn [xhrio]
@@ -137,10 +159,18 @@ void main()
         (.log js/console content)
         (parse content))))))
 
-(defn parse [shadertoy]
-;;(println shadertoy)
-(-> shadertoy
-    :Shader
-    :renderpass
-    count
-    println))
+(def unis ["iTimeDelta" "iFrame" "iChannelTime" "iChannelResolution" "iChannel" "iDate" "iSampleRate"])
+
+(defn parse [shadertoy] 
+(println shadertoy)
+(let [renderpass (-> shadertoy :Shader :renderpass)
+      code (delay (-> renderpass (nth 0) :code))]
+(if (> (count renderpass) 1) (throw (js/Error. "renderpass > 1")))
+(if (> (-> renderpass (nth 0) :inputs count) 0) (throw (js/Error. "inputs > 0")))
+(if (some #(not= -1 (.indexOf code %)) (throw (js/Error. "code has unsupported uniform")))
+(println "passed parse")
+(println @code)
+))
+
+(println "passed")
+(get-shadertoy)
